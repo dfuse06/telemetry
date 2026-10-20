@@ -136,39 +136,48 @@ PlasmoidItem {
                 }
             }
             Rectangle { Layout.fillWidth: true; height: 1; color: "#293B58" }
-            // CPU statistics are fixed-height tiles above the activity chart.
-            // Unlike the old gauges, they cannot draw outside their row.
+            // Restore the original three circular gauges with a dedicated,
+            // fixed-height row so the activity chart never overlaps them.
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: root.height >= 730 ? 86 : 74
-                Layout.minimumHeight: 74
-                Layout.maximumHeight: 86
-                spacing: 8
-                StatTile {
+                Layout.preferredHeight: root.height >= 730 ? 142 : 126
+                Layout.minimumHeight: 126
+                Layout.maximumHeight: 142
+                spacing: 6
+                Gauge {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    title: "CPU °F"
-                    valueText: root.sensorReady ? root.cpuTemp.toFixed(1) + "°" : "N/A"
+                    label: "CPU TEMP"
+                    value: root.sensorReady ? root.cpuTemp : 0
+                    maxValue: 212
+                    displayValue: root.sensorReady ? root.cpuTemp.toFixed(1) + "°" : "N/A"
                     accent: root.cpuTemp >= 185 ? "#FF647C" : root.cyan
+                    sublabel: "FAHRENHEIT"
                 }
-                StatTile {
+                Gauge {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    title: "CPU °C"
-                    valueText: root.sensorReady ? ((root.cpuTemp - 32) * 5 / 9).toFixed(1) + "°" : "N/A"
+                    label: "CPU TEMP"
+                    value: root.sensorReady ? Math.max(0, (root.cpuTemp - 32) * 5 / 9) : 0
+                    maxValue: 100
+                    displayValue: root.sensorReady ? ((root.cpuTemp - 32) * 5 / 9).toFixed(1) + "°" : "N/A"
                     accent: root.cpuTemp >= 185 ? "#FF647C" : "#58A6FF"
+                    sublabel: "CELSIUS"
                 }
-                StatTile {
+                Gauge {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    title: "CPU LOAD"
-                    valueText: root.cpuLoad + "%"
+                    label: "CPU LOAD"
+                    value: root.cpuLoad
+                    maxValue: 100
+                    displayValue: root.cpuLoad + "%"
                     accent: root.purple
+                    sublabel: "UTILIZATION"
                 }
             }
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: Math.max(100, Math.min(135, root.height * 0.17))
+                Layout.preferredHeight: Math.max(94, Math.min(115, root.height * 0.155))
                 radius: 12
                 color: "#55111B30"
                 border.color: "#253550"
@@ -296,18 +305,18 @@ PlasmoidItem {
             onPaint: {
                 const ctx = getContext("2d")
                 ctx.reset()
-                const cx = width/2, cy = height*0.46
-                const r = Math.min(width*0.41, height*0.37)
-                const start = Math.PI*0.75, sweep = Math.PI*1.5
+                const w = width, h = height
+                const cx = w / 2, cy = h * 0.45
+                const r = Math.max(12, Math.min(w * 0.38, h * 0.34))
+                const start = Math.PI * 0.75, sweep = Math.PI * 1.5
                 ctx.lineCap = "round"
-                ctx.lineWidth = 11
+                ctx.lineWidth = Math.max(5, Math.min(9, w * 0.065))
                 ctx.strokeStyle = "#293852"
-                ctx.beginPath(); ctx.arc(cx,cy,r,start,start+sweep); ctx.stroke()
+                ctx.beginPath(); ctx.arc(cx, cy, r, start, start + sweep); ctx.stroke()
                 ctx.strokeStyle = accent
-                ctx.beginPath(); ctx.arc(cx,cy,r,start,start+sweep*Math.max(0,Math.min(1,animatedValue/maxValue))); ctx.stroke()
-                ctx.lineWidth = 2
-                ctx.strokeStyle = "#425475"
-                ctx.beginPath(); ctx.arc(cx,cy,r-15,start,start+sweep); ctx.stroke()
+                ctx.beginPath()
+                ctx.arc(cx, cy, r, start, start + sweep * Math.max(0, Math.min(1, animatedValue / Math.max(1, maxValue))))
+                ctx.stroke()
             }
             onWidthChanged: requestPaint()
             onHeightChanged: requestPaint()
@@ -315,12 +324,29 @@ PlasmoidItem {
         onAnimatedValueChanged: arc.requestPaint()
         onAccentChanged: arc.requestPaint()
         Column {
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: parent.height*0.33
-            spacing: 4
-            Text { text: displayValue; color: "#FFFFFF"; font.pixelSize: 20; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: label; color: "#D6E2F7"; font.pixelSize: 9; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: sublabel; color: root.muted; font.pixelSize: 8; anchors.horizontalCenter: parent.horizontalCenter }
+            anchors.centerIn: parent
+            anchors.verticalCenterOffset: -6
+            spacing: 3
+            Text {
+                text: displayValue
+                color: "#FFFFFF"
+                font.pixelSize: Math.min(17, Math.max(13, parent.parent.width * 0.135))
+                font.bold: true
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+            Text {
+                text: label
+                color: "#D6E2F7"
+                font.pixelSize: 9
+                font.bold: true
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+            Text {
+                text: sublabel
+                color: root.muted
+                font.pixelSize: 8
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
         }
     }
     component Meter: Rectangle {
