@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import org.kde.plasma.plasma5support as Plasma5Support
 
@@ -29,9 +30,18 @@ PlasmoidItem {
     property bool gpuReady: false
     property var history: Array(48).fill(0)
     property string statusText: "CONNECTING"
-    property color cyan: "#00F0E4"
-    property color purple: "#B16CFF"
-    property color muted: "#8395B6"
+    property string selectedTheme: plasmoid.configuration.theme || "original"
+    property bool followPlasma: selectedTheme === "plasma"
+    property color cyan: selectedTheme === "ember" ? "#FF9B43" : selectedTheme === "arctic" ? "#43D9FF" : selectedTheme === "cyber" ? "#DF75FF" : selectedTheme === "mono" ? "#E5E9F0" : followPlasma ? Kirigami.Theme.highlightColor : "#00F0E4"
+    property color purple: selectedTheme === "ember" ? "#FF5964" : selectedTheme === "arctic" ? "#478AFF" : selectedTheme === "cyber" ? "#FF59CC" : selectedTheme === "mono" ? "#9DA6B2" : followPlasma ? Kirigami.Theme.linkColor : "#B16CFF"
+    property color muted: followPlasma ? Kirigami.Theme.disabledTextColor : "#8395B6"
+    property color panelBackground: followPlasma ? Kirigami.Theme.backgroundColor : selectedTheme === "ember" ? "#DD1F1114" : selectedTheme === "arctic" ? "#DD081C30" : selectedTheme === "cyber" ? "#DD1C102B" : selectedTheme === "mono" ? "#DD181B20" : "#66080E1D"
+    property color tileBackground: followPlasma ? Kirigami.Theme.alternateBackgroundColor : "#55121C31"
+    property color outline: followPlasma ? Kirigami.Theme.highlightColor : selectedTheme === "ember" ? "#AE5237" : selectedTheme === "arctic" ? "#3273B9" : selectedTheme === "cyber" ? "#9146D1" : selectedTheme === "mono" ? "#747B85" : "#7449BA"
+    property color primaryText: followPlasma ? Kirigami.Theme.textColor : "#DCE6F5"
+    function gpuCelsius() { return (gpuTemp - 32) * 5 / 9 }
+    function gpuBarPercent() { return Math.max(0, Math.min(100, gpuCelsius())) }
+    function gpuHeatColor() { return gpuCelsius() >= 85 ? "#FF647C" : gpuCelsius() >= 70 ? "#FFB65E" : cyan }
 
     Plasma5Support.DataSource {
         id: source
@@ -85,9 +95,9 @@ PlasmoidItem {
 
     fullRepresentation: Rectangle {
         id: panel
-        color: "#66080E1D"
+        color: root.panelBackground
         radius: 22
-        border.color: "#7449BA"
+        border.color: root.outline
         border.width: 1
         clip: true
         implicitWidth: 440
@@ -121,7 +131,7 @@ PlasmoidItem {
                 Layout.fillWidth: true
                 ColumnLayout {
                     spacing: 3
-                    Text { text: "TELEMETRY"; color: "#C08AFF"; font.bold: true; font.pixelSize: 20; font.letterSpacing: 1.1 }
+                    Text { text: "TELEMETRY"; color: root.purple; font.bold: true; font.pixelSize: 20; font.letterSpacing: 1.1 }
                     Text { text: root.cpuName; color: root.muted; font.pixelSize: 10; font.letterSpacing: 1 }
                 }
                 Item { Layout.fillWidth: true }
@@ -161,7 +171,7 @@ PlasmoidItem {
                     value: root.sensorReady ? Math.max(0, (root.cpuTemp - 32) * 5 / 9) : 0
                     maxValue: 100
                     displayValue: root.sensorReady ? ((root.cpuTemp - 32) * 5 / 9).toFixed(1) + "°" : "N/A"
-                    accent: root.cpuTemp >= 185 ? "#FF647C" : "#58A6FF"
+                    accent: root.cpuTemp >= 185 ? "#FF647C" : root.purple
                     sublabel: "CELSIUS"
                 }
                 Gauge {
@@ -223,7 +233,7 @@ PlasmoidItem {
             }
             RowLayout {
                 Layout.fillWidth: true
-                Text { text: "SYSTEM RESOURCES"; color: "#C08AFF"; font.pixelSize: 11; font.bold: true; font.letterSpacing: 1 }
+                Text { text: "SYSTEM RESOURCES"; color: root.purple; font.pixelSize: 11; font.bold: true; font.letterSpacing: 1 }
                 Item { Layout.fillWidth: true }
                 Text { text: "LIVE / 2 SEC"; color: root.muted; font.pixelSize: 10 }
             }
@@ -236,11 +246,41 @@ PlasmoidItem {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 9
-                StatTile {
+                Rectangle {
                     Layout.fillWidth: true
-                    title: "GPU TEMP"
-                    valueText: root.gpuReady ? root.gpuTemp.toFixed(1) + "°F" : "N/A"
-                    accent: root.purple
+                    Layout.preferredHeight: 80
+                    radius: 11
+                    color: root.tileBackground
+                    border.color: root.outline
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 11
+                        spacing: 7
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Text { text: "GPU TEMP"; color: root.primaryText; font.pixelSize: 11; font.bold: true }
+                            Item { Layout.fillWidth: true }
+                            Text {
+                                text: root.gpuReady ? root.gpuTemp.toFixed(1) + "°F / " + root.gpuCelsius().toFixed(1) + "°C" : "N/A"
+                                color: root.gpuReady ? root.gpuHeatColor() : root.muted
+                                font.pixelSize: 12
+                                font.bold: true
+                            }
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 9
+                            radius: 5
+                            color: "#27364E"
+                            Rectangle {
+                                height: parent.height
+                                radius: parent.radius
+                                color: root.gpuHeatColor()
+                                width: root.gpuReady ? parent.width * root.gpuBarPercent() / 100 : 0
+                                Behavior on width { NumberAnimation { duration: 500 } }
+                            }
+                        }
+                    }
                 }
                 StatTile {
                     Layout.fillWidth: true
@@ -261,7 +301,7 @@ PlasmoidItem {
                     spacing: 6
                     Text {
                         text: "GPU  /  " + root.gpuName
-                        color: "#C08AFF"
+                        color: root.purple
                         font.pixelSize: 11
                         font.bold: true
                         elide: Text.ElideRight
@@ -355,14 +395,14 @@ PlasmoidItem {
         property color accent: root.cyan
         Layout.preferredHeight: 80
         radius: 11
-        color: "#55121C31"
+        color: root.tileBackground
         border.color: "#4A2A3A57"
         ColumnLayout {
           anchors.fill: parent
           anchors.margins: 11
           spacing: 8
         RowLayout {
-            Text { text: label; color: "#DCE6F5"; font.pixelSize: 11; font.bold: true }
+            Text { text: label; color: root.primaryText; font.pixelSize: 11; font.bold: true }
             Item { Layout.fillWidth: true }
             Text { text: value < 0 ? "N/A" : value + "%"; color: accent; font.pixelSize: 13; font.bold: true }
         }
@@ -381,9 +421,9 @@ PlasmoidItem {
         property string title: ""
         property string valueText: ""
         property color accent: root.cyan
-        Layout.preferredHeight: 62
+        Layout.preferredHeight: 80
         radius: 11
-        color: "#55121C31"
+        color: root.tileBackground
         border.color: "#2A3A57"
         Column {
             anchors.centerIn: parent
