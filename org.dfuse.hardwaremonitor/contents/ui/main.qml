@@ -6,11 +6,21 @@ import org.kde.plasma.plasma5support as Plasma5Support
 PlasmoidItem {
     id: root
     preferredRepresentation: fullRepresentation
-    implicitWidth: 390
-    implicitHeight: 620
+    implicitWidth: 440
+    implicitHeight: 660
+    Layout.minimumWidth: 420
+    Layout.minimumHeight: 640
+    Layout.preferredWidth: 440
+    Layout.preferredHeight: 660
     property real cpuTemp: 0
     property real gpuTemp: 0
     property int cpuLoad: 0
+    property string cpuName: "CPU"
+    property string gpuName: "GPU"
+    property int gpuLoad: -1
+    property int vramPercent: -1
+    property real vramUsedGiB: 0
+    property real vramTotalGiB: 0
     property int ram: 0
     property int disk: 0
     property real frequency: 0
@@ -35,6 +45,12 @@ PlasmoidItem {
                     root.gpuReady = s.gpuTemp !== null && s.gpuTemp !== undefined
                     root.cpuTemp = root.sensorReady ? s.cpuTemp : 0
                     root.gpuTemp = root.gpuReady ? s.gpuTemp : 0
+                    root.cpuName = s.cpuName || "CPU"
+                    root.gpuName = s.gpuName || "GPU"
+                    root.gpuLoad = (s.gpuLoad === null || s.gpuLoad === undefined) ? -1 : s.gpuLoad
+                    root.vramPercent = (s.vramPercent === null || s.vramPercent === undefined) ? -1 : s.vramPercent
+                    root.vramUsedGiB = s.vramUsedGiB || 0
+                    root.vramTotalGiB = s.vramTotalGiB || 0
                     root.ram = s.ram || 0
                     root.disk = s.disk || 0
                     root.frequency = s.frequency || 0
@@ -50,7 +66,7 @@ PlasmoidItem {
                     root.statusText = root.sensorReady ? "SYSTEM ONLINE" : "CPU SENSOR UNAVAILABLE"
                 } catch(e) {
                     root.statusText = "SENSOR ERROR"
-                    console.warn("DFUSE telemetry parse error", e)
+                    console.warn("Telemetry parse error", e)
                 }
             }
             source.disconnectSource(name)
@@ -74,6 +90,10 @@ PlasmoidItem {
         border.color: "#7449BA"
         border.width: 1
         clip: true
+        implicitWidth: 440
+        implicitHeight: 660
+        Layout.minimumWidth: 420
+        Layout.minimumHeight: 640
 
         Rectangle {
             width: parent.width * 0.8
@@ -95,14 +115,14 @@ PlasmoidItem {
         }
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 18
-            spacing: 11
+            anchors.margins: root.width < 460 ? 14 : 18
+            spacing: root.height < 690 ? 8 : 11
             RowLayout {
                 Layout.fillWidth: true
                 ColumnLayout {
                     spacing: 3
-                    Text { text: "DFUSE  /  TELEMETRY"; color: "#C08AFF"; font.bold: true; font.pixelSize: 20; font.letterSpacing: 1.1 }
-                    Text { text: "RYZEN 9 9900X   •   CACHYOS"; color: root.muted; font.pixelSize: 10; font.letterSpacing: 1 }
+                    Text { text: "TELEMETRY"; color: "#C08AFF"; font.bold: true; font.pixelSize: 20; font.letterSpacing: 1.1 }
+                    Text { text: root.cpuName; color: root.muted; font.pixelSize: 10; font.letterSpacing: 1 }
                 }
                 Item { Layout.fillWidth: true }
                 Rectangle {
@@ -116,34 +136,39 @@ PlasmoidItem {
                 }
             }
             Rectangle { Layout.fillWidth: true; height: 1; color: "#293B58" }
+            // CPU statistics are fixed-height tiles above the activity chart.
+            // Unlike the old gauges, they cannot draw outside their row.
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 155
-                spacing: 2
-                Gauge {
-                    Layout.fillWidth: true; Layout.fillHeight: true
-                    label: "CPU TEMP"; value: root.cpuTemp; maxValue: 212
-                    displayValue: root.sensorReady ? root.cpuTemp.toFixed(1) + "°" : "N/A"
+                Layout.preferredHeight: root.height >= 730 ? 86 : 74
+                Layout.minimumHeight: 74
+                Layout.maximumHeight: 86
+                spacing: 8
+                StatTile {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    title: "CPU °F"
+                    valueText: root.sensorReady ? root.cpuTemp.toFixed(1) + "°" : "N/A"
                     accent: root.cpuTemp >= 185 ? "#FF647C" : root.cyan
-                    sublabel: "FAHRENHEIT"
                 }
-                Gauge {
-                    Layout.fillWidth: true; Layout.fillHeight: true
-                    label: "CPU TEMP"; value: (root.cpuTemp - 32) * 5 / 9; maxValue: 100
-                    displayValue: root.sensorReady ? ((root.cpuTemp - 32) * 5 / 9).toFixed(1) + "°" : "N/A"
+                StatTile {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    title: "CPU °C"
+                    valueText: root.sensorReady ? ((root.cpuTemp - 32) * 5 / 9).toFixed(1) + "°" : "N/A"
                     accent: root.cpuTemp >= 185 ? "#FF647C" : "#58A6FF"
-                    sublabel: "CELSIUS"
                 }
-                Gauge {
-                    Layout.fillWidth: true; Layout.fillHeight: true
-                    label: "CPU LOAD"; value: root.cpuLoad; maxValue: 100
-                    displayValue: root.cpuLoad + "%"; accent: root.purple
-                    sublabel: "UTILIZATION"
+                StatTile {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    title: "CPU LOAD"
+                    valueText: root.cpuLoad + "%"
+                    accent: root.purple
                 }
             }
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 115
+                Layout.preferredHeight: Math.max(100, Math.min(135, root.height * 0.17))
                 radius: 12
                 color: "#55111B30"
                 border.color: "#253550"
@@ -215,12 +240,43 @@ PlasmoidItem {
                     accent: root.cyan
                 }
             }
-            Item { Layout.fillHeight: true }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Math.max(112, Math.min(138, root.height * 0.18))
+                radius: 12
+                color: "#55111B30"
+                border.color: "#253550"
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 11
+                    spacing: 6
+                    Text {
+                        text: "GPU  /  " + root.gpuName
+                        color: "#C08AFF"
+                        font.pixelSize: 11
+                        font.bold: true
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 9
+                        Meter { Layout.fillWidth: true; label: "GPU LOAD"; value: root.gpuLoad; accent: root.purple }
+                        Meter { Layout.fillWidth: true; label: "VRAM"; value: root.vramPercent; accent: root.cyan }
+                    }
+                    Text {
+                        text: root.vramTotalGiB > 0 ? root.vramUsedGiB.toFixed(2) + " / " + root.vramTotalGiB.toFixed(2) + " GiB VRAM" : "VRAM DATA UNAVAILABLE"
+                        color: root.muted
+                        font.pixelSize: 10
+                    }
+                }
+            }
+            Item { Layout.fillHeight: true; Layout.minimumHeight: 0 }
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 6
                 Rectangle { width: 5; height: 5; radius: 3; color: root.sensorReady ? root.cyan : "#FFB65E" }
-                Text { text: "DFUSE  •  " + root.statusText; color: root.muted; font.pixelSize: 10; font.letterSpacing: 0.5 }
+                Text { text: root.statusText; color: root.muted; font.pixelSize: 10; font.letterSpacing: 0.5 }
             }
         }
     }
@@ -282,7 +338,7 @@ PlasmoidItem {
         RowLayout {
             Text { text: label; color: "#DCE6F5"; font.pixelSize: 11; font.bold: true }
             Item { Layout.fillWidth: true }
-            Text { text: value + "%"; color: accent; font.pixelSize: 13; font.bold: true }
+            Text { text: value < 0 ? "N/A" : value + "%"; color: accent; font.pixelSize: 13; font.bold: true }
         }
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 9

@@ -2,10 +2,10 @@
     "KPlugin": {
         "Id": "org.dfuse.hardwaremonitor",
         "Name": "Telemetry",
-        "Description": "DFUSE system telemetry desktop widget",
+        "Description": "Live CPU, GPU, memory and storage monitoring for KDE Plasma 6",
         "Icon": "utilities-system-monitor",
         "Category": "System Information",
-        "Version": "1.0.0",
+        "Version": "1.1.2",
         "Authors": [
             {
                 "Name": "DFUSE"
