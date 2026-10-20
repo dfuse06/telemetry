@@ -111,7 +111,7 @@ PlasmoidItem {
             x: parent.width * 0.4
             y: -120
             radius: 100
-            color: "#3314214C"
+            color: root.purple
             opacity: 0.28
         }
         Rectangle {
@@ -120,7 +120,7 @@ PlasmoidItem {
             x: -parent.width * 0.5
             y: parent.height - 70
             radius: 100
-            color: "#33362050"
+            color: root.cyan
             opacity: 0.23
         }
         ColumnLayout {
@@ -145,7 +145,7 @@ PlasmoidItem {
                     }
                 }
             }
-            Rectangle { Layout.fillWidth: true; height: 1; color: "#293B58" }
+            Rectangle { Layout.fillWidth: true; height: 1; color: root.outline }
             // Restore the original three circular gauges with a dedicated,
             // fixed-height row so the activity chart never overlaps them.
             RowLayout {
@@ -189,14 +189,14 @@ PlasmoidItem {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.max(94, Math.min(115, root.height * 0.155))
                 radius: 12
-                color: "#55111B30"
-                border.color: "#253550"
+                color: root.tileBackground
+                border.color: root.outline
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 12
                     spacing: 6
                     RowLayout {
-                        Text { text: "CPU ACTIVITY"; color: "#CFD9ED"; font.bold: true; font.pixelSize: 11; font.letterSpacing: 1 }
+                        Text { text: "CPU ACTIVITY"; color: root.primaryText; font.bold: true; font.pixelSize: 11; font.letterSpacing: 1 }
                         Item { Layout.fillWidth: true }
                         Text { text: root.cpuLoad + "% LIVE"; color: root.cyan; font.bold: true; font.pixelSize: 11 }
                     }
@@ -271,7 +271,7 @@ PlasmoidItem {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 9
                             radius: 5
-                            color: "#27364E"
+                            color: root.outline
                             Rectangle {
                                 height: parent.height
                                 radius: parent.radius
@@ -293,8 +293,8 @@ PlasmoidItem {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.max(112, Math.min(138, root.height * 0.18))
                 radius: 12
-                color: "#55111B30"
-                border.color: "#253550"
+                color: root.tileBackground
+                border.color: root.outline
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 11
@@ -369,14 +369,14 @@ PlasmoidItem {
             spacing: 3
             Text {
                 text: displayValue
-                color: "#FFFFFF"
+                color: root.primaryText
                 font.pixelSize: Math.min(17, Math.max(13, parent.parent.width * 0.135))
                 font.bold: true
                 anchors.horizontalCenter: parent.horizontalCenter
             }
             Text {
                 text: label
-                color: "#D6E2F7"
+                color: root.primaryText
                 font.pixelSize: 9
                 font.bold: true
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -396,7 +396,7 @@ PlasmoidItem {
         Layout.preferredHeight: 80
         radius: 11
         color: root.tileBackground
-        border.color: "#4A2A3A57"
+        border.color: root.outline
         ColumnLayout {
           anchors.fill: parent
           anchors.margins: 11
@@ -408,7 +408,7 @@ PlasmoidItem {
         }
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 9
-            radius: 5; color: "#27364E"
+            radius: 5; color: root.outline
             Rectangle {
                 height: parent.height; radius: parent.radius; color: accent
                 width: parent.width*Math.max(0,Math.min(100,value))/100
@@ -424,7 +424,7 @@ PlasmoidItem {
         Layout.preferredHeight: 80
         radius: 11
         color: root.tileBackground
-        border.color: "#2A3A57"
+        border.color: root.outline
         Column {
             anchors.centerIn: parent
             spacing: 5
