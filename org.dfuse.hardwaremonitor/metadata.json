@@ -1,0 +1,18 @@
+{
+    "KPlugin": {
+        "Id": "org.dfuse.hardwaremonitor",
+        "Name": "Telemetry",
+        "Description": "DFUSE system telemetry desktop widget",
+        "Icon": "utilities-system-monitor",
+        "Category": "System Information",
+        "Version": "1.0.0",
+        "Authors": [
+            {
+                "Name": "DFUSE"
+            }
+        ],
+        "License": "MIT"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "KPackageStructure": "Plasma/Applet"
+}
