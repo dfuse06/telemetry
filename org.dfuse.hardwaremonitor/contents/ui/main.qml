@@ -9,10 +9,11 @@ PlasmoidItem {
     preferredRepresentation: fullRepresentation
     implicitWidth: 440
     implicitHeight: 660
-    Layout.minimumWidth: 420
-    Layout.minimumHeight: 640
+    Layout.minimumWidth: 320
+    Layout.minimumHeight: 570
     Layout.preferredWidth: 440
     Layout.preferredHeight: 660
+    property real textScale: Math.max(0.75, Math.min(1.12, width / 440))
     property real cpuTemp: 0
     property real gpuTemp: 0
     property int cpuLoad: 0
@@ -103,8 +104,8 @@ PlasmoidItem {
         clip: true
         implicitWidth: 440
         implicitHeight: 660
-        Layout.minimumWidth: 420
-        Layout.minimumHeight: 640
+        Layout.minimumWidth: 320
+        Layout.minimumHeight: 570
 
         Rectangle {
             width: parent.width * 0.8
@@ -126,14 +127,14 @@ PlasmoidItem {
         }
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: root.width < 460 ? 14 : 18
-            spacing: root.height < 690 ? 8 : 11
+            anchors.margins: root.width < 390 ? 10 : 14
+            spacing: root.height < 720 ? 5 : 8
             RowLayout {
                 Layout.fillWidth: true
                 ColumnLayout {
                     spacing: 3
-                    Text { text: "TELEMETRY"; color: root.purple; font.bold: true; font.pixelSize: 20; font.letterSpacing: 1.1 }
-                    Text { text: root.cpuName; color: root.muted; font.pixelSize: 10; font.letterSpacing: 1 }
+                    Text { text: "TELEMETRY"; color: root.purple; font.bold: true; font.pixelSize: Math.round(20 * root.textScale); font.letterSpacing: 1.1 }
+                    Text { text: root.cpuName; color: root.muted; font.pixelSize: 10; font.letterSpacing: 1; elide: Text.ElideRight; Layout.maximumWidth: Math.max(140, panel.width - 75) }
                 }
                 Item { Layout.fillWidth: true }
                 Rectangle {
@@ -151,9 +152,9 @@ PlasmoidItem {
             // fixed-height row so the activity chart never overlaps them.
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: root.height >= 730 ? 142 : 126
-                Layout.minimumHeight: 126
-                Layout.maximumHeight: 142
+                Layout.preferredHeight: root.height >= 730 ? 135 : 112
+                Layout.minimumHeight: 106
+                Layout.maximumHeight: 135
                 spacing: 6
                 Gauge {
                     Layout.fillWidth: true
@@ -188,7 +189,7 @@ PlasmoidItem {
             }
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: Math.max(94, Math.min(115, root.height * 0.155))
+                Layout.preferredHeight: Math.max(85, Math.min(108, root.height * 0.145))
                 radius: 12
                 color: root.tileBackground
                 border.color: root.outline
@@ -197,7 +198,7 @@ PlasmoidItem {
                     anchors.margins: 12
                     spacing: 6
                     RowLayout {
-                        Text { text: "CPU ACTIVITY"; color: root.primaryText; font.bold: true; font.pixelSize: 11; font.letterSpacing: 1 }
+                        Text { text: "CPU ACTIVITY"; color: root.primaryText; font.bold: true; font.pixelSize: Math.round(11 * root.textScale); font.letterSpacing: 0.5 }
                         Item { Layout.fillWidth: true }
                         Text { text: root.cpuLoad + "% LIVE"; color: root.cyan; font.bold: true; font.pixelSize: 11 }
                     }
@@ -234,9 +235,9 @@ PlasmoidItem {
             }
             RowLayout {
                 Layout.fillWidth: true
-                Text { text: "SYSTEM RESOURCES"; color: root.purple; font.pixelSize: 11; font.bold: true; font.letterSpacing: 1 }
+                Text { text: "SYSTEM RESOURCES"; color: root.purple; font.pixelSize: Math.round(11 * root.textScale); font.bold: true; font.letterSpacing: 0.5 }
                 Item { Layout.fillWidth: true }
-                Text { text: "LIVE / 2 SEC"; color: root.muted; font.pixelSize: 10 }
+                Text { text: "LIVE / 2 SEC"; color: root.muted; font.pixelSize: Math.round(10 * root.textScale) }
             }
             RowLayout {
                 Layout.fillWidth: true
@@ -249,7 +250,8 @@ PlasmoidItem {
                 spacing: 9
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 80
+                    Layout.preferredHeight: root.height < 720 ? 70 : 80
+                    Layout.minimumHeight: 65
                     Layout.minimumWidth: 0
                     radius: 11
                     color: root.tileBackground
@@ -260,7 +262,7 @@ PlasmoidItem {
                         spacing: 3
                         RowLayout {
                             Layout.fillWidth: true
-                            Text { text: "GPU TEMP"; color: root.primaryText; font.pixelSize: 10; font.bold: true }
+                            Text { text: "GPU TEMP"; color: root.primaryText; font.pixelSize: Math.round(11 * root.textScale); font.bold: true }
                             Item { Layout.fillWidth: true }
                         }
                         RowLayout {
@@ -312,7 +314,8 @@ PlasmoidItem {
             }
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: Math.max(112, Math.min(138, root.height * 0.18))
+                Layout.preferredHeight: Math.max(123, Math.min(145, root.height * 0.19))
+                Layout.minimumHeight: 123
                 radius: 12
                 color: root.tileBackground
                 border.color: root.outline
@@ -339,11 +342,12 @@ PlasmoidItem {
                         color: root.muted
                         font.pixelSize: 10
                         Layout.fillWidth: true
+                        Layout.minimumHeight: 13
                         elide: Text.ElideRight
                     }
                 }
             }
-            Item { Layout.fillHeight: true; Layout.minimumHeight: 3 }
+            Item { Layout.fillHeight: true; Layout.minimumHeight: 0 }
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 6
@@ -416,7 +420,8 @@ PlasmoidItem {
         property string label: ""
         property int value: 0
         property color accent: root.cyan
-        Layout.preferredHeight: 80
+        Layout.preferredHeight: root.height < 720 ? 70 : 80
+        Layout.minimumHeight: 65
         radius: 11
         color: root.tileBackground
         border.color: root.outline
@@ -425,9 +430,9 @@ PlasmoidItem {
           anchors.margins: 11
           spacing: 8
         RowLayout {
-            Text { text: label; color: root.primaryText; font.pixelSize: 11; font.bold: true }
+            Text { text: label; color: root.primaryText; font.pixelSize: Math.round(11 * root.textScale); font.bold: true; Layout.minimumWidth: 0; elide: Text.ElideRight }
             Item { Layout.fillWidth: true }
-            Text { text: value < 0 ? "N/A" : value + "%"; color: accent; font.pixelSize: 13; font.bold: true }
+            Text { text: value < 0 ? "N/A" : value + "%"; color: accent; font.pixelSize: Math.round(13 * root.textScale); font.bold: true }
         }
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 9
@@ -452,7 +457,7 @@ PlasmoidItem {
             anchors.centerIn: parent
             spacing: 5
             Text { text: title; color: root.primaryText; font.pixelSize: 10; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: valueText; color: accent; font.pixelSize: 17; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: valueText; color: accent; font.pixelSize: Math.round(17 * root.textScale); font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
         }
     }
 }
