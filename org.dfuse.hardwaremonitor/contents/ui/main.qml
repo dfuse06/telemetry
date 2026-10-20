@@ -34,11 +34,12 @@ PlasmoidItem {
     property bool followPlasma: selectedTheme === "plasma"
     property color cyan: selectedTheme === "ember" ? "#FF9B43" : selectedTheme === "arctic" ? "#43D9FF" : selectedTheme === "cyber" ? "#DF75FF" : selectedTheme === "mono" ? "#E5E9F0" : followPlasma ? Kirigami.Theme.highlightColor : "#00F0E4"
     property color purple: selectedTheme === "ember" ? "#FF5964" : selectedTheme === "arctic" ? "#478AFF" : selectedTheme === "cyber" ? "#FF59CC" : selectedTheme === "mono" ? "#9DA6B2" : followPlasma ? Kirigami.Theme.linkColor : "#B16CFF"
-    property color muted: followPlasma ? Kirigami.Theme.disabledTextColor : "#8395B6"
-    property color panelBackground: followPlasma ? Kirigami.Theme.backgroundColor : selectedTheme === "ember" ? "#DD1F1114" : selectedTheme === "arctic" ? "#DD081C30" : selectedTheme === "cyber" ? "#DD1C102B" : selectedTheme === "mono" ? "#DD181B20" : "#66080E1D"
-    property color tileBackground: followPlasma ? Kirigami.Theme.alternateBackgroundColor : "#55121C31"
+    property color muted: followPlasma ? Kirigami.Theme.textColor : "#B6C6DC"
+    property color panelBackground: Qt.rgba((followPlasma ? Kirigami.Theme.backgroundColor : themeBase).r, (followPlasma ? Kirigami.Theme.backgroundColor : themeBase).g, (followPlasma ? Kirigami.Theme.backgroundColor : themeBase).b, 0.62)
+    property color themeBase: selectedTheme === "ember" ? "#211115" : selectedTheme === "arctic" ? "#0B2035" : selectedTheme === "cyber" ? "#21132F" : selectedTheme === "mono" ? "#191C21" : "#080E1D"
+    property color tileBackground: Qt.rgba((followPlasma ? Kirigami.Theme.alternateBackgroundColor : themeBase).r, (followPlasma ? Kirigami.Theme.alternateBackgroundColor : themeBase).g, (followPlasma ? Kirigami.Theme.alternateBackgroundColor : themeBase).b, 0.42)
     property color outline: followPlasma ? Kirigami.Theme.highlightColor : selectedTheme === "ember" ? "#AE5237" : selectedTheme === "arctic" ? "#3273B9" : selectedTheme === "cyber" ? "#9146D1" : selectedTheme === "mono" ? "#747B85" : "#7449BA"
-    property color primaryText: followPlasma ? Kirigami.Theme.textColor : "#DCE6F5"
+    property color primaryText: followPlasma ? Kirigami.Theme.textColor : "#F1F6FF"
     function gpuCelsius() { return (gpuTemp - 32) * 5 / 9 }
     function gpuBarPercent() { return Math.max(0, Math.min(100, gpuCelsius())) }
     function gpuHeatColor() { return gpuCelsius() >= 85 ? "#FF647C" : gpuCelsius() >= 70 ? "#FFB65E" : cyan }
@@ -112,7 +113,7 @@ PlasmoidItem {
             y: -120
             radius: 100
             color: root.purple
-            opacity: 0.28
+            opacity: 0.07
         }
         Rectangle {
             width: parent.width * 0.8
@@ -121,7 +122,7 @@ PlasmoidItem {
             y: parent.height - 70
             radius: 100
             color: root.cyan
-            opacity: 0.23
+            opacity: 0.05
         }
         ColumnLayout {
             anchors.fill: parent
@@ -249,22 +250,42 @@ PlasmoidItem {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 80
+                    Layout.minimumWidth: 0
                     radius: 11
                     color: root.tileBackground
                     border.color: root.outline
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 11
-                        spacing: 7
+                        spacing: 3
                         RowLayout {
                             Layout.fillWidth: true
-                            Text { text: "GPU TEMP"; color: root.primaryText; font.pixelSize: 11; font.bold: true }
+                            Text { text: "GPU TEMP"; color: root.primaryText; font.pixelSize: 10; font.bold: true }
                             Item { Layout.fillWidth: true }
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 4
                             Text {
-                                text: root.gpuReady ? root.gpuTemp.toFixed(1) + "°F / " + root.gpuCelsius().toFixed(1) + "°C" : "N/A"
-                                color: root.gpuReady ? root.gpuHeatColor() : root.muted
-                                font.pixelSize: 12
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: root.gpuReady ? root.gpuTemp.toFixed(1) + "°F" : "N/A"
+                                color: root.purple
+                                font.pixelSize: 13
                                 font.bold: true
+                                minimumPixelSize: 9
+                                fontSizeMode: Text.Fit
+                            }
+                            Text { text: "/"; color: root.muted; font.pixelSize: 11 }
+                            Text {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: root.gpuReady ? root.gpuCelsius().toFixed(1) + "°C" : "N/A"
+                                color: root.cyan
+                                font.pixelSize: 13
+                                font.bold: true
+                                minimumPixelSize: 9
+                                fontSizeMode: Text.Fit
                             }
                         }
                         Rectangle {
@@ -317,15 +338,17 @@ PlasmoidItem {
                         text: root.vramTotalGiB > 0 ? root.vramUsedGiB.toFixed(2) + " / " + root.vramTotalGiB.toFixed(2) + " GiB VRAM" : "VRAM DATA UNAVAILABLE"
                         color: root.muted
                         font.pixelSize: 10
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
                     }
                 }
             }
-            Item { Layout.fillHeight: true; Layout.minimumHeight: 0 }
+            Item { Layout.fillHeight: true; Layout.minimumHeight: 3 }
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 6
                 Rectangle { width: 5; height: 5; radius: 3; color: root.sensorReady ? root.cyan : "#FFB65E" }
-                Text { text: root.statusText; color: root.muted; font.pixelSize: 10; font.letterSpacing: 0.5 }
+                Text { text: root.statusText; color: root.primaryText; font.pixelSize: 10; font.letterSpacing: 0.5 }
             }
         }
     }
@@ -428,7 +451,7 @@ PlasmoidItem {
         Column {
             anchors.centerIn: parent
             spacing: 5
-            Text { text: title; color: root.muted; font.pixelSize: 10; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: title; color: root.primaryText; font.pixelSize: 10; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
             Text { text: valueText; color: accent; font.pixelSize: 17; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
         }
     }
