@@ -29,8 +29,8 @@ $settingsKey=Get-Item "$key/Settings"
 # Preserve existing user settings on subsequent installs.
 $ints=@{width=410;leftOffset=800;monitor=1;allMonitors=0;reserveSpace=0;showNetwork=0;fontSize=11;adaptiveColors=0;textOpacity=96;showCpuGraph=1;showGpuGraph=1;updateInterval=1;historySeconds=60;cpuWarningTemp=75;cpuCriticalTemp=85;gpuWarningTemp=80;gpuCriticalTemp=90;memoryWarningPercent=80;memoryCriticalPercent=90;reserveGap=8}
 $strings=@{preferredLayout='full';moveHotkey='Ctrl+Alt+T';fontFamily='Segoe UI Variable Text';textColor='#75E6FF';graphColor='#427CFF';warningColor='#FFFFB900';criticalColor='#FFFF6B6B';temperatureSource='auto';gpuAdapter='';gpuMemoryMode='auto';networkUnit='bytes'}
-foreach($entry in $ints.GetEnumerator()){if($null -eq (Get-ItemPropertyValue -Path $settingsKey.PSPath -Name $entry.Key -ErrorAction SilentlyContinue)){New-ItemProperty -Path $settingsKey.PSPath -Name $entry.Key -Value $entry.Value -PropertyType DWord | Out-Null}}
-foreach($entry in $strings.GetEnumerator()){if($null -eq (Get-ItemPropertyValue -Path $settingsKey.PSPath -Name $entry.Key -ErrorAction SilentlyContinue)){New-ItemProperty -Path $settingsKey.PSPath -Name $entry.Key -Value $entry.Value -PropertyType String | Out-Null}}
+foreach($entry in $ints.GetEnumerator()){if($null -eq $settingsKey.GetValue($entry.Key,$null)){New-ItemProperty -Path $settingsKey.PSPath -Name $entry.Key -Value $entry.Value -PropertyType DWord | Out-Null}}
+foreach($entry in $strings.GetEnumerator()){if($null -eq $settingsKey.GetValue($entry.Key,$null)){New-ItemProperty -Path $settingsKey.PSPath -Name $entry.Key -Value $entry.Value -PropertyType String | Out-Null}}
 New-ItemProperty -Path $key -Name SettingsChangeTime -Value ([int][DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -PropertyType DWord -Force | Out-Null
 $exe=Join-Path $install 'Telemetry.exe'
 if(-not $SkipAutostart){
@@ -45,7 +45,7 @@ Start-Process -FilePath $exe -WindowStyle Hidden
 if($ReplacePreview){
     $oldKey='HKLM:/SOFTWARE/Windhawk/Engine/Mods/taskbar-system-info'
     $old=Get-ItemProperty -Path $oldKey -ErrorAction SilentlyContinue
-    if($old -and $old.LibraryFileName -in @('taskbar-system-info_1.9.0.dll','taskbar-system-info_1.9.0_move1.dll')){
+    if($old){
         Set-ItemProperty -Path $oldKey -Name Disabled -Value 1
     }
 }

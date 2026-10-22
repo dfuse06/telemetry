@@ -45,8 +45,8 @@ The installer copies the app to `%LOCALAPPDATA%\Programs\DFUSE\Telemetry`,
 registers its own `telemetry-taskbar` Windhawk component, and starts Telemetry.
 It creates an elevated **DFUSE Telemetry** scheduled task at sign-in for the
 current interactive user; no password is stored. Use `-SkipAutostart` to omit it.
-Subsequent installs preserve taskbar settings. `-ReplacePreview` disables only
-the specific locally built prototype from this development session.
+Subsequent installs preserve taskbar settings. `-ReplacePreview` disables the earlier `taskbar-system-info` mod so only the new
+Telemetry taskbar component remains active.
 
 This is a taskbar extension loaded by Windhawk, not a replacement for Microsoft's
 weather/Widgets button. Explorer updates and other taskbar modifications can
